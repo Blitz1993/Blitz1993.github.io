@@ -7,6 +7,7 @@
 </head>
 <body onload="if(localStorage.cached505=='yes')setTimeout(exploit, 50);">
 <script>
+window.applicationCache.ondownloading=function(){document.getElementById("msgs2").innerHTML="Wait a Moment...";};
 window.applicationCache.onprogress=function(a){document.getElementById("msgs2").innerHTML="Installing Offline Cache: "+(Math.round(100*(a.loaded/a.total)))+"%"};
 window.applicationCache.oncached=function(){setTimeout(function(){document.getElementById("msgs2").innerHTML="Cache Installed Successfully ✔";},1500);setTimeout(function(){document.getElementById("msgs2").innerHTML="Now Close And Re-Open Your Browser ..."; },3500);localStorage.cached505="yes";};
 window.applicationCache.onnoupdate=function(){localStorage.cached505="yes";};
