@@ -64,6 +64,7 @@
 </div>
 <h1 style="margin-top: 105px;">Special Thanks to:<a href="https://twitter.com/_AlAzif" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@_AlAzif</a>Leeful<a href="https://twitter.com/SpecterDev" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@SpecterDev</a>SiSTR0<a href="https://twitter.com/Prb29327239" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@Prb29327239</a></h1>
 <script>
+// === DETECTOR DE FIRMWARE ===
 var uaFull = navigator.userAgent;
 var match = uaFull.match(/PlayStation 4[ /]([\d.]+)/i);
 var isPS4 = match !== null;
@@ -72,21 +73,32 @@ var fwVersion = isPS4 ? match[1] : "Unknown";
 var supportedFW = ["5.05", "5.07"];
 
 if (!isPS4) {
-    if (window.applicationCache) window.applicationCache.abort();
     document.getElementById("msgs2").innerHTML = "This host is only for PlayStation 4";
-} 
-else if (!supportedFW.includes(fwVersion)) {
-    if (window.applicationCache) window.applicationCache.abort();
+} else if (!supportedFW.includes(fwVersion)) {
     document.getElementById("msgs2").innerHTML = 'Unsupported Firmware: <span style="color:red;">' + fwVersion + '</span>';
-} 
-else {
+} else {
+    // Firmware soportado
     if(window.applicationCache.status===window.applicationCache.DOWNLOADING){localStorage.cached505="no";}
+
     window.applicationCache.onprogress=function(a){document.getElementById("msgs2").innerHTML="Installing Offline Cache: "+(Math.round(100*(a.loaded/a.total))||0)+"%"};
+
     window.applicationCache.oncached=function(){setTimeout(function(){document.getElementById("msgs2").innerHTML="Cache Installed Successfully ✔";},1500);setTimeout(function(){document.getElementById("msgs2").innerHTML="Now Close And Re-Open Your Browser ...";localStorage.cached505="yes";},3500);};
+
     window.applicationCache.onupdateready=function(){window.applicationCache.oncached();};
+
+    // Error muy simple como pediste
     window.applicationCache.onerror=function(){if(navigator.onLine===true){document.getElementById("msgs2").innerHTML="Error Installing Cache! - Clear and Re-Open Your Browser ...";}if(navigator.onLine===false){localStorage.cached505="yes";}};
+
     window.applicationCache.onnoupdate=function(){localStorage.cached505="yes";};
-    window.applicationCache.onchecking=function(){if(navigator.onLine===false){localStorage.cached505="yes";}else if(localStorage.cached505==="yes"){localStorage.cached505="no";}};
+
+    // onchecking - maneja offline de forma limpia
+    window.applicationCache.onchecking=function(){
+        if (navigator.onLine === false) {
+            localStorage.cached505 = "yes";   // Offline → cargamos sin mostrar error
+        } else if (localStorage.cached505 === "yes") {
+            localStorage.cached505 = "no";    // Online y ya estaba en yes → forzamos actualización
+        }
+    };
 }
 
 function success(){
