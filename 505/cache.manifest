@@ -1,8 +1,12 @@
 CACHE MANIFEST 
+# Version: 2.1 - Actualizado 2024-04-26
+# Este comentario fuerza a PS4 a descargar cambios si modificas este archivo.
 
 CACHE:
-../img.jpg
+index.html
+exploit.js
 ../style.css
+../img.jpg
 app2usb.bin
 arabic-guy100.bin
 arabic-guy127.bin
@@ -12,7 +16,6 @@ backup.bin
 disable-updates.bin
 dumper.bin
 enable-updates.bin
-exploit.js
 fan-threshold50.bin
 fan-threshold55.bin
 fan-threshold60.bin
@@ -22,7 +25,6 @@ fan-threshold75.bin
 ftp.bin
 goldhen_2.3_505.bin
 goldhen_2.4b18.9.bin
-index.html
 kernel-dumper.bin
 Lamance-v0.9-1.38.bin
 Orbis-Toolbox-505.bin
@@ -43,9 +45,8 @@ WildeModz-1.33.bin
 WildeModz-1.38.bin
 WildeModz-1.46.bin
 
+NETWORK:
+*
 
-
-NETWORK: 
-* 
-
-# Date: 2024-04-26T14:59:00Z:
+SETTINGS:
+prefer-online
