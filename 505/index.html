@@ -87,7 +87,7 @@ if (!isPS4) {
     window.applicationCache.onupdateready=function(){window.applicationCache.oncached();};
 
     // Error muy simple como pediste
-    window.applicationCache.onerror=function(){localStorage.cached505 === "no" || if(navigator.onLine===true){document.getElementById("msgs2").innerHTML="Error Installing Cache! - Clear and Re-Open Your Browser ...";}if(navigator.onLine===false){localStorage.cached505="yes";}};
+    window.applicationCache.onerror=function(){localStorage.cached505 === "no" && if(navigator.onLine===true){document.getElementById("msgs2").innerHTML="Error Installing Cache! - Clear and Re-Open Your Browser ...";}if(navigator.onLine===false){localStorage.cached505="yes";}};
 
     window.applicationCache.onnoupdate=function(){localStorage.cached505="yes";};
 
