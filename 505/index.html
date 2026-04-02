@@ -86,17 +86,24 @@ if (!isPS4) {
 
     window.applicationCache.onupdateready=function(){window.applicationCache.oncached();};
 
-    // Error muy simple como pediste
-    window.applicationCache.onerror=function(){if(navigator.onLine===true){document.getElementById("msgs2").innerHTML="Error Installing Cache! - Clear and Re-Open Your Browser ...";}if(navigator.onLine===false){localStorage.cached505="yes";}};
+    // Error optimizado para HTTPS
+    window.applicationCache.onerror=function(){
+        // Solo mostramos error si estamos online y en modo actualización
+        if (localStorage.cached505 === "no" && navigator.onLine === true) {
+            document.getElementById("msgs2").innerHTML = "Error Installing Cache! - Clear Browser Data and Re-Install ...";
+        }
+        // Siempre restauramos para que offline y recargas funcionen
+        localStorage.cached505 = "yes";
+    };
 
     window.applicationCache.onnoupdate=function(){localStorage.cached505="yes";};
 
-    // onchecking - maneja offline de forma limpia
+    // onchecking - muy importante para HTTPS y recargas de pestaña
     window.applicationCache.onchecking=function(){
         if (navigator.onLine === false) {
-            localStorage.cached505 = "yes";   // Offline → cargamos sin mostrar error
+            localStorage.cached505 = "yes";
         } else if (localStorage.cached505 === "yes") {
-            localStorage.cached505 = "no";    // Online y ya estaba en yes → forzamos actualización
+            localStorage.cached505 = "no";
         }
     };
 }
