@@ -77,27 +77,39 @@ if (!isPS4) {
 } else if (!supportedFW.includes(fwVersion)) {
     document.getElementById("msgs2").innerHTML = 'Unsupported Firmware: <span style="color:red;">' + fwVersion + '</span>';
 } else {
-    // Firmware soportado
-    if(window.applicationCache.status===window.applicationCache.DOWNLOADING){localStorage.cached505="no";}
+    // Si el navegador empieza a descargar una actualización real, marcamos "no"
+    window.applicationCache.ondownloading = function(){ localStorage.cached505 = "no"; };
 
-    window.applicationCache.onprogress=function(a){document.getElementById("msgs2").innerHTML="Installing Offline Cache: "+(Math.round(100*(a.loaded/a.total))||0)+"%"};
+    window.applicationCache.onprogress = function(a){
+        document.getElementById("msgs2").innerHTML = "Installing Offline Cache: " + (Math.round(100 * (a.loaded / a.total)) || 0) + "%";
+    };
 
-    window.applicationCache.oncached=function(){setTimeout(function(){document.getElementById("msgs2").innerHTML="Cache Installed Successfully ✔";},1500);setTimeout(function(){document.getElementById("msgs2").innerHTML="Now Close And Re-Open Your Browser ...";localStorage.cached505="yes";},3500);};
+    window.applicationCache.oncached = function(){
+        localStorage.cached505 = "yes";
+        document.getElementById("msgs2").innerHTML = "Cache Installed Successfully ✔";
+    };
 
-    window.applicationCache.onupdateready=function(){window.applicationCache.oncached();};
+    window.applicationCache.onupdateready = function(){
+        localStorage.cached505 = "yes";
+        document.getElementById("msgs2").innerHTML = "Update Ready! Please Re-Open Your Browser.";
+    };
 
-    // Error muy simple como pediste
-    window.applicationCache.onerror=function(){if(navigator.onLine===true){document.getElementById("msgs2").innerHTML="Error Installing Cache! - Clear and Re-Open Your Browser ...";}if(navigator.onLine===false){localStorage.cached505="yes";}};
-
-    window.applicationCache.onnoupdate=function(){localStorage.cached505="yes";};
-
-    // onchecking - maneja offline de forma limpia
-    window.applicationCache.onchecking=function(){
-        if (navigator.onLine === false) {
-            localStorage.cached505 = "yes";   // Offline → cargamos sin mostrar error
-        } else if (localStorage.cached505 === "yes") {
-            localStorage.cached505 = "no";    // Online y ya estaba en yes → forzamos actualización
+    window.applicationCache.onerror = function(){
+        // Si ya hay caché (yes), GitHub no debe bloquearnos con su error de red
+        if(localStorage.cached505 !== "yes" && navigator.onLine === true){
+            document.getElementById("msgs2").innerHTML = "Error Installing Cache! - Clear and Re-Open Your Browser ...";
         }
+    };
+
+    window.applicationCache.onchecking = function(){
+        if (navigator.onLine === false) {
+            localStorage.cached505 = "yes";
+        }
+        // No forzamos el "no" aquí para que el body cargue siempre si ya existe caché previa
+    };
+
+    window.applicationCache.onnoupdate = function(){
+        localStorage.cached505 = "yes";
     };
 }
 
