@@ -5,13 +5,30 @@
 <link rel="stylesheet" href="../../style.css">
 <script src="exploit.js"></script>
 </head>
-<body onload="setTimeout(exploit, 50);">
+<body>
 <h1 id="msgs">PS4 Restore Host for 5.05 FW</h1>
 <hr>
 <br>
 <h1 id="msgs2" style="font-size: 30px;margin-top: 77px;margin-bottom: 455px;">Loading Payload... Please Wait</h1>
 <h1 style="margin-top: 105px;">Special Thanks to:<a href="https://twitter.com/_AlAzif" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@_AlAzif</a>Leeful<a href="https://twitter.com/SpecterDev" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@SpecterDev</a>SiSTR0<a href="https://twitter.com/Prb29327239" style="color: #f31414;margin-left: 10px;margin-right: 10px;">@Prb29327239</a></h1>
 <script>
+var uaFull = navigator.userAgent;
+var match = uaFull.match(/PlayStation 4[ /]([\d.]+)/i);
+var isPS4 = match !== null;
+var fwVersion = isPS4 ? match[1] : "Unknown";
+
+var supportedFW = ["5.05", "5.07"];
+
+if (!isPS4) {
+    document.getElementById("msgs2").innerHTML = "This host is only for PlayStation 4";
+} 
+else if (!supportedFW.includes(fwVersion)) {
+    document.getElementById("msgs2").innerHTML = 'Unsupported Firmware: <span style="color:red;">' + fwVersion + '</span>';
+} 
+else {
+    setTimeout(function(){exploit();},50);
+}
+	
 function allset(){
 msgs2.innerHTML = LoadedMSG
 }
