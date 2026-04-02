@@ -1,8 +1,13 @@
 CACHE MANIFEST 
+# v2.1.5
 
 CACHE:
-../img.jpg
+index.html
+exploit.js
 ../style.css
+../img.jpg
+goldhen_2.4b18.9.bin
+goldhen_2.3_505.bin
 app2usb.bin
 arabic-guy100.bin
 arabic-guy127.bin
@@ -12,7 +17,6 @@ backup.bin
 disable-updates.bin
 dumper.bin
 enable-updates.bin
-exploit.js
 fan-threshold50.bin
 fan-threshold55.bin
 fan-threshold60.bin
@@ -20,9 +24,6 @@ fan-threshold65.bin
 fan-threshold70.bin
 fan-threshold75.bin
 ftp.bin
-goldhen_2.3_505.bin
-goldhen_2.4b18.9.bin
-index.html
 kernel-dumper.bin
 Lamance-v0.9-1.38.bin
 Orbis-Toolbox-505.bin
@@ -43,9 +44,5 @@ WildeModz-1.33.bin
 WildeModz-1.38.bin
 WildeModz-1.46.bin
 
-
-
 NETWORK: 
 * 
-
-# Date: 2024-03-26T14:59:00Z:

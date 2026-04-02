@@ -73,12 +73,16 @@ var fwVersion = isPS4 ? match[1] : "Unknown";
 var supportedFW = ["5.05", "5.07"];
 
 if (!isPS4) {
-    document.getElementById("msgs2").innerHTML = "This host is only for PlayStation 4";
+    if (window.applicationCache) window.applicationCache.abort();
+    document.getElementById("msgs2").innerHTML = "This host is only for PlayStation 4 on Firmware 5.05";
 } else if (!supportedFW.includes(fwVersion)) {
+    if (window.applicationCache) window.applicationCache.abort();
     document.getElementById("msgs2").innerHTML = 'Unsupported Firmware: <span style="color:red;">' + fwVersion + '</span>';
 } else {
-    // Si el navegador empieza a descargar una actualización real, marcamos "no"
-    window.applicationCache.ondownloading = function(){ localStorage.cached505 = "no"; };
+    // Si hay una actualización real en curso, pausamos el exploit
+    window.applicationCache.ondownloading = function(){ 
+        localStorage.cached505 = "no"; 
+    };
 
     window.applicationCache.onprogress = function(a){
         document.getElementById("msgs2").innerHTML = "Installing Offline Cache: " + (Math.round(100 * (a.loaded / a.total)) || 0) + "%";
@@ -91,12 +95,18 @@ if (!isPS4) {
 
     window.applicationCache.onupdateready = function(){
         localStorage.cached505 = "yes";
-        document.getElementById("msgs2").innerHTML = "Update Ready! Please Re-Open Your Browser.";
+        document.getElementById("msgs2").innerHTML = "Update Ready! Close and Re-Open Browser.";
+    };
+
+    window.applicationCache.onnoupdate = function(){
+        localStorage.cached505 = "yes";
     };
 
     window.applicationCache.onerror = function(){
-        // Si ya hay caché (yes), GitHub no debe bloquearnos con su error de red
-        if(localStorage.cached505 !== "yes" && navigator.onLine === true){
+        // Si ya tenemos caché previa, ignoramos el error de red (típico de GitHub/304)
+        if(localStorage.cached505 === "yes"){
+            // El body lanzará el exploit automáticamente
+        } else if(navigator.onLine === true){
             document.getElementById("msgs2").innerHTML = "Error Installing Cache! - Clear and Re-Open Your Browser ...";
         }
     };
@@ -105,11 +115,8 @@ if (!isPS4) {
         if (navigator.onLine === false) {
             localStorage.cached505 = "yes";
         }
-        // No forzamos el "no" aquí para que el body cargue siempre si ya existe caché previa
-    };
-
-    window.applicationCache.onnoupdate = function(){
-        localStorage.cached505 = "yes";
+        // IMPORTANTE: No forzamos el "no" aquí. 
+        // Dejamos que el navegador decida si hay update tras leer el manifest.
     };
 }
 
