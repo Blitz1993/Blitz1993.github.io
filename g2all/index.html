@@ -39,6 +39,7 @@ if (!isPS4) {
         if (fwNum >= 6.00 && fwNum <= 6.72) {
             var script = document.createElement('script');
             script.src = "css/main.js";
+            script.onerror = onScriptError;
             script.onload = function () {
                 doJb();
             };
