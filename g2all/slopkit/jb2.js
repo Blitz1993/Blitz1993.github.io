@@ -114,24 +114,36 @@ const FROM_LANDING = (function () {
    takes over, autostart included, and it arms with a proper referrer and a
    visible countdown. A probe is exempt: it fires nothing and patches
    nothing. */
+/* Success sets sessionStorage + cleans the URL (no reload). That avoids
+   OOM from re-running in the same session. Full console reboot clears
+   sessionStorage so a normal index load runs again. Leftover ?afterglow=done
+   is redirected silently to plain index.html. */
+const SESSION_DONE_KEY = "jb2.goldhen_done";
 const SENT_HOME = (function () {
   const want = params.get("afterglow");
-  if (!want || want === "probe" || FROM_LANDING) return false;
+  let sessionDone = false;
   try {
-    document.body.className = "fail";
-    var m = document.getElementById("msgs");
-    if (m) {
-      m.innerHTML = "Page restored — going back to start...";
-    }
+    sessionDone = sessionStorage.getItem(SESSION_DONE_KEY) === "1";
   } catch (e) {}
-  /* replace(), not assign(): the refused page must not stay in the history,
-     or stepping back lands straight on it again. */
-  setTimeout(function () {
+
+  if (sessionDone) {
+    try {
+      history.replaceState(null, "", "index.html");
+    } catch (e) {}
+    try {
+      hostAlready();
+    } catch (e) {}
+    return true;
+  }
+
+  /* Old URL marker only — silent redirect, no on-screen text. */
+  if (want && want !== "probe" && !FROM_LANDING) {
     try {
       location.replace("index.html");
     } catch (e) {}
-  }, 1500);
-  return true;
+    return true;
+  }
+  return false;
 })();
 
 const PROBE_MODE = params.get("probe") === "1";
@@ -1150,7 +1162,11 @@ let allDone = false,
       // without it the restored landing page would count down and run the
       // whole chain a second time on an already patched kernel.
       try {
-        history.replaceState(null, "", "index.html?afterglow=done");
+        sessionStorage.setItem(SESSION_DONE_KEY, "1");
+      } catch (e) {}
+      /* Only rewrite the URL bar — do NOT navigate/reload (would OOM). */
+      try {
+        history.replaceState(null, "", "index.html");
       } catch (e) {}
       // Stop here. Without this the host's own chain would still run
       // afterwards -- afterglow IS the kernel stage, not a prelude to one.
