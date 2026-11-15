@@ -1518,7 +1518,7 @@ async function loadGoldhen(url, k, kbase, room, preloaded) {
     return [rd4(plus(buf, GH.mark + s2 * 8)), rd4(plus(buf, GH.mark + s2 * 8 + 4))];
   };
 
-     says what the difference is. The blob is position independent, takes no
+  /* The padding write is the difference. The blob is position independent, takes no
      arguments, fetches the kernel base through rdmsr and ends in ret, so it
      only has to sit somewhere ring 0 may run from.
 
