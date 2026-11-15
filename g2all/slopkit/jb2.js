@@ -4,18 +4,21 @@ import { int64 } from "./int64.js";
 import { offsetsFor, PS4 } from "./ps4_offsets.js";
 
 function ensureHostConsole() {
-  // Like original host: use #out / #state from HTML if present.
-  // Visibility comes from body.log CSS in index.html (not inline hide).
+  var hide =
+    "position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;" +
+    "overflow:hidden;opacity:0;pointer-events:none;";
   var out = document.getElementById("out");
   var st = document.getElementById("state");
   if (!out) {
     out = document.createElement("pre");
     out.id = "out";
+    out.setAttribute("style", hide);
     (document.body || document.documentElement).appendChild(out);
   }
   if (!st) {
     st = document.createElement("div");
     st.id = "state";
+    st.setAttribute("style", hide);
     (document.body || document.documentElement).appendChild(st);
   }
   return { outEl: out, stateEl: st };
@@ -27,19 +30,9 @@ const lines = [];
 let alreadyLoaded = false;
 const params = new URLSearchParams(location.search);
 
-// Immediate proof that this module actually loaded and ran.
-try {
-  if (document.body) document.body.className = "log";
-  if (outEl) outEl.textContent = "JB2 STARTED  ua=" + (navigator.userAgent || "?");
-  if (stateEl) stateEl.textContent = "jb2 module running...";
-  var m0 = document.getElementById("msgs") || document.getElementById("msg");
-  if (m0) m0.innerHTML = "JB2 running (debug log ON)...";
-} catch (e0) {}
-
 function hostOk() {
   var m = document.getElementById("msgs") || document.getElementById("msg");
   if (m) m.innerHTML = "GoldHEN v2.4b18.14 Loaded ...";
-  try { mark("DONE", "GoldHEN v2.4b18.14 Loaded"); } catch (e) {}
 }
 function hostFail() {
   var m = document.getElementById("msgs") || document.getElementById("msg");
@@ -47,17 +40,14 @@ function hostFail() {
     m.innerHTML = "Failed to Load! Restart Your Console ...";
     m.style.color = "yellow";
   }
-  try { mark("FAIL", "Failed to Load! Restart Your Console"); } catch (e) {}
 }
 function hostAlready() {
   var m = document.getElementById("msgs") || document.getElementById("msg");
   if (m) m.innerHTML = "GoldHEN is Already Loaded ...";
-  try { mark("ALREADY", "GoldHEN is Already Loaded"); } catch (e) {}
 }
 function hostRetry() {
   var m = document.getElementById("msgs") || document.getElementById("msg");
   if (m) m.innerHTML = "Failed to Load! Reopen the Browser ...";
-  try { mark("RETRY", "Failed to Load! Reopen the Browser"); } catch (e) {}
 }
 
 /* The retry notice. Two things lead here: the chain throws, or it stalls
@@ -69,16 +59,11 @@ let retryShown = false;
 
 function showNotice(text) {
   try {
-    // Keep log panel visible (body.log) and put the big message inside #out
-    // like the original host ("exploit failed - please retry...").
-    if (document.body) {
-      document.body.className = "log";
-      document.body.classList.add("fail");
-    }
     const box = document.createElement("div");
     box.className = "notice";
     box.textContent = text;
     (document.getElementById("out") || document.body).appendChild(box);
+    document.body.classList.add("fail");
   } catch (e) {}
 }
 
@@ -86,10 +71,7 @@ function showRetry() {
   if (retryShown) return;
   retryShown = true;
   try { hostRetry(); } catch (e) {}
-  // Same text as original, large, inside the log panel — do NOT drop body.log
-  try {
-    showNotice("exploit failed - please retry (reopen browser)");
-  } catch (e) {}
+  try { if (document.body) document.body.className = "fail"; } catch (e) {}
 }
 
 const WATCHDOG_MS = 45000;
@@ -186,8 +168,7 @@ function terse(s) {
   return s;
 }
 
-// Forced ON for debug — logs always visible.
-const SHOW_LOG = true;
+const SHOW_LOG = params.get("log") === "1";
 
 const ramBox =
   document.getElementById("ramBox");
@@ -289,10 +270,31 @@ if (ramBox) {
   );
 }
 
-/* DEBUG: keep log panel visible (already styled in ensureHostConsole). */
-try {
-  if (document.body) document.body.className = "log";
-} catch (e) {}
+/* Hide console off-screen. Logs always write. ?log=1 shows console. */
+var HIDE_STYLE =
+  "position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;" +
+  "overflow:hidden;opacity:0;pointer-events:none;";
+if (SHOW_LOG && !SENT_HOME && document.body) {
+  document.body.className = "log";
+  try {
+    if (outEl) {
+      outEl.removeAttribute("style");
+      outEl.style.cssText =
+        "display:block;white-space:pre-wrap;overflow:auto;max-height:70vh;";
+    }
+    if (stateEl) {
+      stateEl.removeAttribute("style");
+      stateEl.style.cssText = "display:block;";
+    }
+  } catch (e) {}
+} else {
+  try {
+    if (outEl) outEl.setAttribute("style", HIDE_STYLE);
+    if (stateEl) stateEl.setAttribute("style", HIDE_STYLE);
+    var ram = document.getElementById("ramBox");
+    if (ram) ram.setAttribute("style", HIDE_STYLE);
+  } catch (e) {}
+}
 /* `ran` says whether the kernel stage was entered. A failure before that
    costs nothing and a reload is enough; a failure after it may leave the
    handles armed, and then only a cold start is safe. */
@@ -301,20 +303,9 @@ function finishUI(ok, ran) {
   if (alreadyLoaded) hostAlready();
   else if (ok) hostOk();
   else if (ran) hostFail();
-  else {
-    hostRetry();
-    // Big message inside the log panel (keep body.log visible).
-    try {
-      showNotice("exploit failed - please retry (reopen browser)");
-    } catch (e) {}
-  }
-  // Always keep the log panel up in debug builds.
-  try {
-    if (document.body) {
-      document.body.className = "log";
-      if (!ok && !alreadyLoaded) document.body.classList.add("fail");
-    }
-  } catch (e) {}
+  else hostRetry();
+  if (SHOW_LOG || !document.body) return;
+  document.body.className = ok || alreadyLoaded ? "done" : "fail";
 }
 function mark(tag, detail) {
   lastMark = Date.now();
